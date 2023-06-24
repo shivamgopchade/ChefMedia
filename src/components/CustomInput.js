@@ -8,7 +8,7 @@ const CustomInput = (props) => {
         style={{
           fontSize: 16,
           fontFamily: "sans-serif",
-          marginBottom: "3%",
+          marginBottom: "1%",
           ...props.customstyle,
           fontWeight: "bold",
         }}
@@ -21,12 +21,13 @@ const CustomInput = (props) => {
         value={props.val}
         style={{
           width: "100%",
-          padding: 8,
-          borderRadius: 20,
+          padding: "1%",
+          //borderRadius: 20,
           borderColor: appTheme.COLORS.transparentBlack7,
-          borderWidth: 2,
-          marginBottom: "5%",
+          borderBottomWidth: 2,
+          marginBottom: "10%",
           ...props.customstyle,
+          color: "black",
         }}
         multiline={props.type}
         numberOfLines={props.numberOfLines}

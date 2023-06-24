@@ -79,7 +79,7 @@ const UserProfile = ({ route, navigation }) => {
         Setdata(snapshot.val());
         let f = snapshot.val();
         //console.log(snapshot.val());
-        if (f.followers.find((e) => e == auth.currentUser.uid)) {
+        if (f.followers && f.followers.find((e) => e == auth.currentUser.uid)) {
           Setfollow(true);
         } else {
           Setfollow(false);
@@ -229,9 +229,35 @@ const UserProfile = ({ route, navigation }) => {
               )}
             </View>
 
-            <Text style={{ fontSize: 16, color: "gray" }}>
-              {data.City}|{data.Country}
-            </Text>
+            {data.professional && (
+              <TouchableOpacity
+                style={{
+                  alignItems: "flex-end",
+                  flexDirection: "row",
+                }}
+                onPress={() => {
+                  try {
+                    Linking.openURL(data.location);
+                  } catch (e) {
+                    console.log("error in opening tw");
+                  }
+                }}
+              >
+                <MaterialIcons
+                  name="restaurant"
+                  size={24}
+                  color={appTheme.COLORS.darkLime}
+                />
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: appTheme.COLORS.transparentGray,
+                  }}
+                >
+                  Restaurant
+                </Text>
+              </TouchableOpacity>
+            )}
             <Text
               style={{
                 fontSize: 15,
@@ -274,7 +300,7 @@ const UserProfile = ({ route, navigation }) => {
                 <Text
                   style={{ fontSize: 16, color: "gray", fontWeight: "bold" }}
                 >
-                  {data.followers.length}
+                  {data.followers ? data.followers.length : 0}
                 </Text>
               </View>
               <View
@@ -296,7 +322,7 @@ const UserProfile = ({ route, navigation }) => {
                 <Text
                   style={{ fontSize: 16, color: "gray", fontWeight: "bold" }}
                 >
-                  {data.following.length}
+                  {data.following ? data.following.length : 0}
                 </Text>
               </View>
               <View
@@ -318,7 +344,7 @@ const UserProfile = ({ route, navigation }) => {
                 <Text
                   style={{ fontSize: 16, color: "gray", fontWeight: "bold" }}
                 >
-                  0
+                  {data.Servings ? data.Servings.length : 0}
                 </Text>
               </View>
             </View>

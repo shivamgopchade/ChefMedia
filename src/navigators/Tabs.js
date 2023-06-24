@@ -22,7 +22,7 @@ const Tabs = () => {
           //borderTopLeftEndRadius: 16,
           //borderTopRightRadius: 16,
           //backgroundColor: "#ffff",
-          backgroundColor: appTheme.COLORS.transparentBlack9,
+          backgroundColor: "black",
         },
 
         tabBarIcon: ({ focused }) => {

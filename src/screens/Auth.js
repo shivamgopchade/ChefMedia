@@ -26,7 +26,7 @@ const LoginState = (navigation) => {
   });
 };
 
-const Auth = ({ navigation }) => {
+const Auth = ({ navigation, route }) => {
   useEffect(() => {
     LoginState(navigation);
   }, []);
@@ -47,7 +47,7 @@ const Auth = ({ navigation }) => {
             left: 0,
             right: 0,
             bottom: 0,
-            height: 200,
+            height: 240,
           }}
         >
           <Text
@@ -58,9 +58,10 @@ const Auth = ({ navigation }) => {
               fontFamily: "sans-serif",
               lineHeight: 45,
               padding: "2%",
+              fontWeight: "bold",
             }}
           >
-            Join the community that enjoys cooking together!!
+            Join the platform made for chefs!!
           </Text>
           <Text
             style={{
@@ -100,7 +101,7 @@ const Auth = ({ navigation }) => {
           color={appTheme.COLORS.darkLime}
           onPress={() => {
             console.log("signup clicked");
-            navigation.replace("Signup");
+            navigation.replace("Signup", route.params);
           }}
           icon=<FontAwesome5 name="user-plus" size={24} color="black" />
         />

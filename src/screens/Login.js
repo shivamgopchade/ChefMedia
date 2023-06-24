@@ -5,6 +5,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   ImageBackground,
+  TouchableOpacity,
 } from "react-native";
 import CustomButton from "../components/CustomButton";
 import { appTheme } from "../constants";
@@ -44,17 +45,15 @@ const Login = ({ navigation }) => {
       >
         <View
           style={{
-            flex: 1,
-            justifyContent: "center",
+            marginTop: "10%",
+            //justifyContent: "center",
             alignItems: "center",
           }}
         >
           <View
             style={{
-              justifyContent: "flex-start",
               width: "100%",
-              flexDirection: "row",
-              top: 0,
+              alignItems: "flex-start",
             }}
           >
             <CustomButtonRound
@@ -69,70 +68,89 @@ const Login = ({ navigation }) => {
               }
             />
           </View>
-          <Text
+          <View
             style={{
-              ...appTheme.FONTS.body1,
-              padding: 5,
-              fontFamily: "sans-serif",
-              opacity: 1,
-              zIndex: 1,
+              height: "60%",
+              justifyContent: "center",
+              alignItems: "flex-start",
+              width: "100%",
+              //borderWidth: 1,
+              marginTop: "5%",
+              paddingHorizontal: "5%",
             }}
           >
-            Login
-          </Text>
-          <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={(text) => {
-              //console.log(text);
-              Setemail(text);
-            }}
-            style={{
-              //border: "solid",
-              width: "80%",
-              padding: 15,
-              borderRadius: 20,
-              borderColor: appTheme.COLORS.transparentBlack7,
-              borderWidth: 2,
-              marginBottom: "5%",
-              fontWeight: "bold",
-            }}
-          />
-          <TextInput
-            value={pass}
-            placeholder="Password"
-            secureTextEntry={true}
-            onChangeText={(text) => Setpass(text)}
-            style={{
-              //border: "solid",
-              width: "80%",
-              padding: 15,
-              borderRadius: 20,
-              borderColor: appTheme.COLORS.transparentBlack7,
-              borderWidth: 2,
-              marginBottom: "5%",
-            }}
-          />
-          {status.length != 0 && (
-            <CustomNote
-              text={status}
-              text_color="black"
-              bg_color={appTheme.COLORS.lightGray}
+            <Text
+              style={{
+                fontWeight: "bold",
+                fontSize: 48,
+                marginBottom: "10%",
+                color: appTheme.COLORS.blue,
+              }}
+            >
+              Sign In
+            </Text>
+            <TextInput
+              placeholder="Email"
+              value={email}
+              onChangeText={(text) => {
+                //console.log(text);
+                Setemail(text);
+              }}
+              style={{
+                //border: "solid",
+                width: "100%",
+                paddingBottom: "1%",
+                borderColor: appTheme.COLORS.transparentBlack7,
+                marginBottom: "10%",
+                fontWeight: "bold",
+                borderBottomWidth: 2,
+              }}
             />
-          )}
+            <TextInput
+              value={pass}
+              placeholder="Password"
+              secureTextEntry={true}
+              onChangeText={(text) => Setpass(text)}
+              style={{
+                //border: "solid",
+                width: "100%",
+                borderColor: appTheme.COLORS.transparentBlack7,
+                borderBottomWidth: 2,
+                marginBottom: "5%",
+                paddingBottom: "1%",
+              }}
+            />
+            {status.length != 0 && (
+              <View style={{ width: "100%", alignItems: "center" }}>
+                <Text style={{ fontSize: 12, color: "red" }}>{status}</Text>
+              </View>
+            )}
+          </View>
+          <View
+            style={{
+              borderWidth: 16,
+              //width: "60%",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: appTheme.COLORS.transparentBlack9,
+              height: "10%",
+            }}
+          >
+            <Text style={{ color: appTheme.COLORS.darkLime }}>
+              Dont Have an Account?{" "}
+            </Text>
+            <TouchableOpacity onPress={() => navigation.replace("Signup")}>
+              <Text style={{ color: appTheme.COLORS.blue, fontWeight: "bold" }}>
+                Signup
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        <View style={{ flex: 0.8 }}>
+        <View>
           <CustomButton
             color={appTheme.COLORS.transparentBlack9}
             onPress={HandleLogin}
-            icon={
-              <FontAwesome5
-                name="arrow-alt-circle-right"
-                size={30}
-                color="white"
-              />
-            }
+            text="LOGIN"
           />
         </View>
       </ImageBackground>

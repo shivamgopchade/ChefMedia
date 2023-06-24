@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,12 @@ import {
   Pressable,
   TouchableOpacity,
   Image,
+  Alert,
+  Modal,
+  ActivityIndicator,
 } from "react-native";
 import { v4 as uuidv4 } from "uuid";
-import { getDatabase, ref, set } from "firebase/database";
+import { getDatabase, ref, set, onValue } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import AppIntroSlider from "react-native-app-intro-slider";
 import CustomTitleBar from "../components/CustomTitleBar";
@@ -42,6 +45,19 @@ const Create = ({ navigation }) => {
   const [image, Setimage] = useState(null);
   const [description, Setdescription] = useState("");
   const [time, SetTime] = useState("");
+  const [PushToken, SetPushToken] = useState("");
+  const [LoadingModal, SetLoadingModal] = useState(false);
+  const [pdata, Setpdata] = useState(null);
+  //const [pdata,Setpdata]=useState('');
+
+  useEffect(() => {
+    FetchPushToken();
+  }, []);
+
+  // useEffect(() => {
+  //   console.log("$$");
+  //   HandleSubmit();
+  // }, [pdata]);
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -49,11 +65,10 @@ const Create = ({ navigation }) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [3, 4],
-      quality: 1,
+      quality: 0.2,
     });
 
     console.log(result);
-
     if (!result.cancelled) {
       Setimage(result.uri);
     }
@@ -76,6 +91,35 @@ const Create = ({ navigation }) => {
     },
   ];
 
+  const validator = () => {
+    if (
+      title != "" &&
+      ingredients.length != 0 &&
+      steps.length != 0 &&
+      image &&
+      PushToken.length !== 0
+    ) {
+      return true;
+    }
+    return false;
+  };
+
+  const FetchPushToken = () => {
+    const db = getDatabase();
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const dataRef = ref(db, "Profiles/+ " + user.uid);
+    onValue(dataRef, (snapshot) => {
+      if (snapshot.val()) {
+        SetPushToken(snapshot.val().tokens.PushToken);
+        Setpdata(snapshot.val());
+        //console.log(snapshot.val().tokens.PushToken);
+      } else {
+        console.log("error occured fetching pushtoken");
+      }
+    });
+  };
+
   const HandleSubmit = async () => {
     const storage = getStorage();
     const db = getDatabase();
@@ -83,31 +127,59 @@ const Create = ({ navigation }) => {
     const user = auth.currentUser;
     const id = uuidv4();
 
-    const response = await fetch(image);
-    const blob = await response.blob();
-    const img = storage_ref(storage, `Servings/${id}`);
-    uploadBytes(img, blob).then((snapshot) => {
-      console.log("Uploaded a blob or file!");
+    if (validator()) {
+      console.log("valid");
+      const response = await fetch(image);
+      const blob = await response.blob();
+      const img = storage_ref(storage, `Servings/${id}`);
+      uploadBytes(img, blob).then((snapshot) => {
+        console.log("Uploaded a blob or file!");
 
-      getDownloadURL(storage_ref(storage, `Servings/${id}`))
-        .then((url) => {
-          set(ref(db, `Servings/${id}`), {
-            Name: title,
-            Ingredients: ingredients,
-            Procedure: steps,
-            Veg: Veg,
-            Description: description ? description : "No description added",
-            Time: time,
-            image_uri: url,
-            uid: user.uid,
-            Likes: [user.uid],
-            Saves: [user.uid],
-          });
-          navigation.replace("Home");
-          //console.log(url);
-        })
-        .catch((err) => console.log(err));
-    });
+        getDownloadURL(storage_ref(storage, `Servings/${id}`))
+          .then((url) => {
+            const d = new Date();
+            console.log(d);
+            set(ref(db, `Servings/${id}`), {
+              Name: title,
+              Ingredients: ingredients,
+              Procedure: steps,
+              Veg: Veg,
+              Description: description ? description : "No description added",
+              Time: time,
+              image_uri: url,
+              uid: user.uid,
+              Likes: [],
+              Saves: [],
+              PushToken: PushToken,
+              Upvotes: [],
+              Date: `${d.getHours()}:${d.getMinutes()} on ${d.getDate()}/${d.getMonth()}/${d.getFullYear()}`,
+            });
+
+            if (pdata.Servings) {
+              //console.log(pdata.Servings);
+              var arr = pdata.Servings;
+              arr.push(id);
+              //pdata.Servings.push(id);
+              set(ref(db, `Profiles/+ ${user.uid}`), {
+                ...pdata,
+                Servings: arr,
+              });
+            } else
+              set(ref(db, `Profiles/+ ${user.uid}`), {
+                ...pdata,
+                Servings: [id],
+              });
+            console.log("done");
+            navigation.replace("Home");
+          })
+          .catch((err) => console.log(err));
+      });
+    } else {
+      Alert.alert(
+        "Error!!",
+        "Invalid input.Please check all fields are proper"
+      );
+    }
   };
 
   const Round = (type) => {
@@ -188,11 +260,6 @@ const Create = ({ navigation }) => {
             <LinearGradient
               colors={["transparent", "rgba(0,0,0,1)"]}
               style={{
-                //position: "absolute",
-                //justifyContent: "flex-end",
-                //left: 0,
-                //right: 0,
-                //bottom: 0,
                 height: "100%",
               }}
             >
@@ -715,11 +782,52 @@ const Create = ({ navigation }) => {
       <AppIntroSlider
         data={slides}
         renderItem={({ item }) => HandleRender(item)}
-        onDone={HandleSubmit}
+        onDone={() => {
+          SetLoadingModal(true);
+          HandleSubmit();
+        }}
         showPrevButton={true}
         renderNextButton={() => Round("next")}
         renderPrevButton={() => Round("before")}
       />
+      <Modal
+        animationType="fade"
+        visible={LoadingModal}
+        transparent
+        onRequestClose={() => {
+          SetLoadingModal(!LoadingModal);
+        }}
+        style={{
+          height: "100%",
+          width: "100%",
+          //borderWidth: 2,
+          backgroundColor: appTheme.COLORS.transparentBlack9,
+        }}
+      >
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            margin: "auto",
+            flex: 1,
+            backgroundColor: appTheme.COLORS.transparentBlack9,
+          }}
+        >
+          <ActivityIndicator size="large" color={appTheme.COLORS.darkLime} />
+          <Text
+            style={{
+              fontSize: 24,
+              color: appTheme.COLORS.blue,
+              paddingBottom: "2%",
+            }}
+          >
+            Hang on
+          </Text>
+          <Text style={{ fontSize: 12, color: "white" }}>
+            This may take few seconds...
+          </Text>
+        </View>
+      </Modal>
     </View>
   );
 };

@@ -25,6 +25,7 @@ import {
   FontAwesome5,
   MaterialIcons,
 } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import ProfileEditor from "../components/ProfileEditor";
 import {
   getStorage,
@@ -68,7 +69,7 @@ const Profile = ({ navigation }) => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 0.2,
     });
 
     //console.log(result);
@@ -99,6 +100,7 @@ const Profile = ({ navigation }) => {
         Setloading(false);
         //console.log(data);
       } else {
+        //console.log("$$");
         navigation.navigate("ProfileSetter");
       }
     });
@@ -107,12 +109,18 @@ const Profile = ({ navigation }) => {
   }, []);
 
   const HandleDeleteUser = () => {
-    deleteUser(auth.currentUser)
+    let cu = auth.currentUser;
+    signOut(auth)
       .then(() => {
-        console.log("user removed successfull");
-        navigation.replace("Auth");
+        console.log("signout successfull");
+        deleteUser(cu)
+          .then(() => {
+            console.log("user removed successfull");
+            navigation.replace("Auth");
+          })
+          .catch((err) => console.log(err));
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.Console.log(err));
   };
 
   const HandleMediaSubmit = () => {
@@ -166,6 +174,17 @@ const Profile = ({ navigation }) => {
           }}
           resizeMode="cover"
         />
+        <LinearGradient
+          colors={["transparent", "rgba(0,0,0,1)"]}
+          style={{
+            position: "absolute",
+            justifyContent: "flex-end",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 200,
+          }}
+        />
       </View>
     );
   };
@@ -218,10 +237,35 @@ const Profile = ({ navigation }) => {
                 <FontAwesome5 name="images" size={24} color="gray" />
               </TouchableOpacity>
             </View>
-
-            <Text style={{ fontSize: 16, color: "gray" }}>
-              {data.City}|{data.Country}
-            </Text>
+            {data.professional && (
+              <TouchableOpacity
+                style={{
+                  alignItems: "flex-end",
+                  flexDirection: "row",
+                }}
+                onPress={() => {
+                  try {
+                    Linking.openURL(data.location);
+                  } catch (e) {
+                    console.log("error in opening tw");
+                  }
+                }}
+              >
+                <MaterialIcons
+                  name="restaurant"
+                  size={24}
+                  color={appTheme.COLORS.darkLime}
+                />
+                <Text
+                  style={{
+                    fontSize: 15,
+                    color: appTheme.COLORS.transparentGray,
+                  }}
+                >
+                  Restaurant
+                </Text>
+              </TouchableOpacity>
+            )}
             <Text
               style={{
                 fontSize: 15,
@@ -273,7 +317,7 @@ const Profile = ({ navigation }) => {
                 <Text
                   style={{ fontSize: 16, color: "gray", fontWeight: "bold" }}
                 >
-                  {data.followers.length}
+                  {data.followers ? data.followers.length : 0}
                 </Text>
               </View>
               <View
@@ -295,7 +339,7 @@ const Profile = ({ navigation }) => {
                 <Text
                   style={{ fontSize: 16, color: "gray", fontWeight: "bold" }}
                 >
-                  {data.following.length}
+                  {data.following ? data.following.length : 0}
                 </Text>
               </View>
               <View
@@ -317,7 +361,7 @@ const Profile = ({ navigation }) => {
                 <Text
                   style={{ fontSize: 16, color: "gray", fontWeight: "bold" }}
                 >
-                  0
+                  {data.Servings ? data.Servings.length : 0}
                 </Text>
               </View>
             </View>

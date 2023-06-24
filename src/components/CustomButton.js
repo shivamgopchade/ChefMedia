@@ -8,7 +8,7 @@ const CustomButton = (props) => {
         backgroundColor: props.color,
         margin: "4%",
         borderRadius: 20,
-        paddingVertical: 15,
+        paddingVertical: 12,
         justifyContent: "center",
         alignItems: "center",
         flexDirection: "row",
@@ -23,6 +23,7 @@ const CustomButton = (props) => {
           textAlign: "center",
           color: "white",
           fontFamily: "sans-serif",
+          fontWeight: "bold",
         }}
       >
         {props.text}

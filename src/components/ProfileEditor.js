@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, Switch, Modal, KeyboardAvoidingView } from "react-native";
 import { getDatabase, ref, set } from "firebase/database";
 import { getAuth } from "firebase/auth";
@@ -7,6 +7,7 @@ import CustomInput from "./CustomInput";
 import CustomButton from "./CustomButton";
 import { Feather, AntDesign } from "@expo/vector-icons";
 import { ScrollView } from "react-native";
+import * as Notifications from "expo-notifications";
 
 const ProfileEditor = ({
   data,
@@ -14,6 +15,7 @@ const ProfileEditor = ({
   SetmodalVisible,
   Setvalidate = undefined,
 }) => {
+  //console.log("token:", t);
   const [username, Setusername] = data.username
     ? useState(data.username)
     : useState("");
@@ -23,26 +25,22 @@ const ProfileEditor = ({
   const [cuisine, Setcuisine] = data.cuisine
     ? useState(data.cuisine)
     : useState("");
-  const [city, Setcity] = data.City ? useState(data.City) : useState("");
-  const [Country, SetCountry] = data.Country
-    ? useState(data.Country)
-    : useState("");
-
   const [starter, Setstarter] = data.starter
     ? useState(data.starter)
     : useState("");
-  const [validator, Setvalidator] = useState("");
+  const [location, Setlocation] = data.location
+    ? useState(data.location)
+    : useState("");
+  const [tokens, Settokens] = data.tokens
+    ? useState(data.tokens)
+    : useState("");
 
+  const [validator, Setvalidator] = useState("");
   const toggleSwitch = () => Setprofessional(!professional);
+  //console.log("Tokens:", tokens);
 
   const validate = () => {
-    if (
-      !username.length ||
-      !cuisine.length ||
-      !city.length ||
-      !Country.length ||
-      !starter.length
-    ) {
+    if (!username.length || !cuisine.length || !starter.length) {
       return false;
     }
     return true;
@@ -58,13 +56,14 @@ const ProfileEditor = ({
         username: username,
         professional: professional,
         cuisine: cuisine,
-        City: city,
-        Country: Country,
         starter: starter,
         user_ref: data.user_ref ? data.user_ref : id,
-        followers: data.followers ? data.followers : [id],
-        following: data.following ? data.following : [id],
+        followers: data.followers ? data.followers : [],
+        following: data.following ? data.following : [],
         cuisines: cuisine,
+        location: location,
+        Servings: data.Servings ? data.Servings : [],
+        tokens: data.tokens ? data.tokens : tokens,
       });
       Setvalidate(true);
       SetmodalVisible(false);
@@ -74,6 +73,15 @@ const ProfileEditor = ({
     }
   };
 
+  useEffect(() => {
+    Notifications.getExpoPushTokenAsync()
+      .then((d) => {
+        //console.log("data", d.data);
+        Settokens({ PushToken: d.data });
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
   return (
     <Modal
       animationType="fade"
@@ -82,8 +90,22 @@ const ProfileEditor = ({
       onRequestClose={() => {
         SetmodalVisible(!modalVisible);
       }}
-      style={{ border: "solid", height: "100%", width: "100%" }}
+      style={{
+        border: "solid",
+        height: "100%",
+        width: "100%",
+      }}
     >
+      <View
+        style={{
+          backgroundColor: "black",
+          justifyContent: "center",
+          width: "100%",
+          height: "1%",
+        }}
+      >
+        <View></View>
+      </View>
       <ScrollView
         style={{
           flex: 1,
@@ -110,10 +132,10 @@ const ProfileEditor = ({
             <CustomInput
               customstyle={{
                 color: appTheme.COLORS.darkLime,
-                marginBottom: "3%",
+                //marginBottom: "3%",
                 fontSize: 16,
               }}
-              title="Enter your username"
+              title="Username"
               placeholder="Username"
               val={username}
               onChange={(text) => {
@@ -123,34 +145,15 @@ const ProfileEditor = ({
             />
             <CustomInput
               customstyle={{ color: appTheme.COLORS.darkLime }}
-              title="Describe yourself in short"
+              title="Bio"
               placeholder="Your starter"
               val={starter}
               type={true}
-              numberOfLines={4}
+              //numberOfLines={4}
               onChange={(text) => {
                 Setstarter(text);
               }}
             />
-            <CustomInput
-              customstyle={{ color: appTheme.COLORS.darkLime }}
-              title="Enter your current working city"
-              placeholder="Working city"
-              val={city}
-              onChange={(text) => {
-                Setcity(text);
-              }}
-            />
-            <CustomInput
-              customstyle={{ color: appTheme.COLORS.darkLime }}
-              title="Enter your current working country"
-              placeholder="Working country"
-              val={Country}
-              onChange={(text) => {
-                SetCountry(text);
-              }}
-            />
-
             <CustomInput
               customstyle={{ color: appTheme.COLORS.darkLime }}
               title="What type of cuisine you are interested in and love to serve"
@@ -171,6 +174,17 @@ const ProfileEditor = ({
               value={professional}
               style={{ height: "5%" }}
             />
+            {professional && (
+              <CustomInput
+                customstyle={{ color: appTheme.COLORS.darkLime }}
+                title="Restaurant Location"
+                placeholder="Location Link"
+                val={location}
+                onChange={(text) => {
+                  Setlocation(text);
+                }}
+              />
+            )}
             <Text>{validator}</Text>
             <CustomButton
               onPress={() => HandleSubmit()}
@@ -182,18 +196,6 @@ const ProfileEditor = ({
                 alignItems: "center",
               }}
             />
-            {/* <CustomButton
-              onPress={() => SetmodalVisible(false)}
-              //color={appTheme.COLORS.transparentBlack9}
-              icon={
-                <Feather
-                  name="chevrons-down"
-                  size={28}
-                  color={appTheme.COLORS.transparentBlack9}
-                />
-              }
-              //customstyle={{ width: "100%", border: "solid" }}
-            /> */}
           </View>
         </KeyboardAvoidingView>
       </ScrollView>
